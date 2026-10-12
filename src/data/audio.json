@@ -18,9 +18,27 @@
     "v": "pc"
    }
   ],
+  "cha": [
+   {
+    "f": "ss/cha.mp3",
+    "v": "pc"
+   }
+  ],
   "ebusuku": [
    {
     "f": "ss/ebusuku.mp3",
+    "v": "pc"
+   }
+  ],
+  "edolobheni": [
+   {
+    "f": "ss/edolobheni.mp3",
+    "v": "pc"
+   }
+  ],
+  "ekuseni": [
+   {
+    "f": "ss/ekuseni.mp3",
     "v": "pc"
    }
   ],
@@ -30,15 +48,51 @@
     "v": "pc"
    }
   ],
+  "emaveji": [
+   {
+    "f": "ss/emaveji.mp3",
+    "v": "pc"
+   }
+  ],
   "emini": [
    {
     "f": "ss/emini.mp3",
     "v": "pc"
    }
   ],
+  "entasi": [
+   {
+    "f": "ss/entasi.mp3",
+    "v": "pc"
+   }
+  ],
   "entsambama": [
    {
     "f": "ss/entsambama.mp3",
+    "v": "pc"
+   }
+  ],
+  "eposini": [
+   {
+    "f": "ss/eposini.mp3",
+    "v": "pc"
+   }
+  ],
+  "esiteshini": [
+   {
+    "f": "ss/esiteshini.mp3",
+    "v": "pc"
+   }
+  ],
+  "esitolo": [
+   {
+    "f": "ss/esitolo.mp3",
+    "v": "pc"
+   }
+  ],
+  "etulu": [
+   {
+    "f": "ss/etulu.mp3",
     "v": "pc"
    }
   ],
@@ -108,6 +162,12 @@
     "v": "pc"
    }
   ],
+  "iyaphi": [
+   {
+    "f": "ss/iyaphi.mp3",
+    "v": "pc"
+   }
+  ],
   "kakhulu": [
    {
     "f": "ss/kakhulu.mp3",
@@ -120,15 +180,39 @@
     "v": "pc"
    }
   ],
+  "kulungile": [
+   {
+    "f": "ss/kulungile.mp3",
+    "v": "pc"
+   }
+  ],
   "kumnandzi": [
    {
     "f": "ss/kumnandzi.mp3",
     "v": "pc"
    }
   ],
+  "kungenteka-vele": [
+   {
+    "f": "ss/kungenteka-vele.mp3",
+    "v": "pc"
+   }
+  ],
+  "kungenteka": [
+   {
+    "f": "ss/kungenteka.mp3",
+    "v": "pc"
+   }
+  ],
   "kusasa": [
    {
     "f": "ss/kusasa.mp3",
+    "v": "pc"
+   }
+  ],
+  "kusihlwa": [
+   {
+    "f": "ss/kusihlwa.mp3",
     "v": "pc"
    }
   ],
@@ -147,6 +231,18 @@
   "lapha": [
    {
     "f": "ss/lapha.mp3",
+    "v": "pc"
+   }
+  ],
+  "libhulakufesi": [
+   {
+    "f": "ss/libhulakufesi.mp3",
+    "v": "pc"
+   }
+  ],
+  "lidina": [
+   {
+    "f": "ss/lidina.mp3",
     "v": "pc"
    }
   ],
@@ -240,9 +336,33 @@
     "v": "pc"
    }
   ],
+  "ngeke": [
+   {
+    "f": "ss/ngeke.mp3",
+    "v": "pc"
+   }
+  ],
+  "ngesancele": [
+   {
+    "f": "ss/ngesancele.mp3",
+    "v": "pc"
+   }
+  ],
   "ngesutsi": [
    {
     "f": "ss/ngesutsi.mp3",
+    "v": "pc"
+   }
+  ],
+  "ngicela-ishintji": [
+   {
+    "f": "ss/ngicela-ishintji.mp3",
+    "v": "pc"
+   }
+  ],
+  "ngicela-uphindze": [
+   {
+    "f": "ss/ngicela-uphindze.mp3",
     "v": "pc"
    }
   ],
@@ -294,6 +414,12 @@
     "v": "pc"
    }
   ],
+  "nginemndeni": [
+   {
+    "f": "ss/nginemndeni.mp3",
+    "v": "pc"
+   }
+  ],
   "nginesingani": [
    {
     "f": "ss/nginesingani.mp3",
@@ -321,6 +447,18 @@
   "ngiyabonga": [
    {
     "f": "ss/ngiyabonga.mp3",
+    "v": "pc"
+   }
+  ],
+  "ngiyacela": [
+   {
+    "f": "ss/ngiyacela.mp3",
+    "v": "pc"
+   }
+  ],
+  "ngiyacolisa": [
+   {
+    "f": "ss/ngiyacolisa.mp3",
     "v": "pc"
    }
   ],
@@ -384,6 +522,18 @@
     "v": "pc"
    }
   ],
+  "shano-kancane-ngiyacela": [
+   {
+    "f": "ss/shano-kancane-ngiyacela.mp3",
+    "v": "pc"
+   }
+  ],
+  "shukela": [
+   {
+    "f": "ss/shukela.mp3",
+    "v": "pc"
+   }
+  ],
   "sikhatsi": [
    {
     "f": "ss/sikhatsi.mp3",
@@ -414,6 +564,12 @@
     "v": "pc"
    }
   ],
+  "titselo": [
+   {
+    "f": "ss/titselo.mp3",
+    "v": "pc"
+   }
+  ],
   "umfati": [
    {
     "f": "ss/umfati.mp3",
@@ -423,6 +579,18 @@
   "umndeni": [
    {
     "f": "ss/umndeni.mp3",
+    "v": "pc"
+   }
+  ],
+  "umntfwana": [
+   {
+    "f": "ss/umntfwana.mp3",
+    "v": "pc"
+   }
+  ],
+  "umnyaka": [
+   {
+    "f": "ss/umnyaka.mp3",
     "v": "pc"
    }
   ],
@@ -453,6 +621,12 @@
   "wena-ke": [
    {
     "f": "ss/wena-ke.mp3",
+    "v": "pc"
+   }
+  ],
+  "wo-ngiyabona": [
+   {
+    "f": "ss/wo-ngiyabona.mp3",
     "v": "pc"
    }
   ],

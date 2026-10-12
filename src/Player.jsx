@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
+import SpeakExercise from './SpeakExercise.jsx';
 import {
   SRC_LABEL, VOICE_LABEL, beep, buzz, checkTyped, lightningExercise, norm, playItem, preloadAudio, retryExercise, shuffle, stressGuide,
 } from './lib.js';
@@ -44,6 +45,8 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
   const [pulse, setPulse] = useState(false);
   const [confirmQuit, setConfirmQuit] = useState(false);
   const [noListen, setNoListen] = useState(false); // "Can't listen now" for the rest of this session
+  const [noSpeak, setNoSpeak] = useState(false); // "Can't speak now"
+  const [spoken, setSpoken] = useState(null); // best result on the current speaking exercise
   const bestCombo = useRef(0);
   const results = useRef({}); // itemId -> first-try correct?
   const retries = useRef({}); // itemId -> retries queued, capped so a hard word can't make the lesson endless
@@ -60,7 +63,8 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
 
   useEffect(() => {
     setStatus(ex.type === 'intro' ? 'right' : 'answer');
-    setPicked(null); setTypedVal(''); setTypo(null); setBuilt([]); setHints(0);
+    setPicked(null); setTypedVal(''); setTypo(null); setBuilt([]); setHints(0); setSpoken(null);
+    if (ex.type === 'speak' && noSpeak) { next(); return undefined; }
     if (ex.type === 'type') setTimeout(() => inputRef.current?.focus(), 30);
     // Hear the word whenever seeing it doesn't give the answer away.
     const hearNow = ex.type === 'intro' || (ex.type === 'mcq' && ex.dir === 't2e');
@@ -120,6 +124,19 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
     });
   }
 
+  // Speaking only ever rewards: a great match counts as a correct answer, a miss is not held against you,
+  // because the check can't be as sure as a human listener.
+  function onSpoken(levelName) {
+    const rank = { retry: 0, close: 1, great: 2 };
+    if (spoken && rank[spoken] >= rank[levelName]) return;
+    setSpoken(levelName);
+    if (levelName === 'great') {
+      if (!(ex.item in results.current)) record(ex.item, true);
+      bumpCombo(true);
+      if (sound) beep('right');
+    }
+  }
+
   function quit() {
     if (idx < 3 || confirmQuit) { onQuit(); return; }
     setConfirmQuit(true);
@@ -173,6 +190,7 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); }
         return;
       }
+      if (ex.type === 'speak' && e.key === 'Enter') { next(); return; }
       if (ex.type === 'mcq' && /^[1-4]$/.test(e.key)) pickOption(ex.options[Number(e.key) - 1]);
       if (ex.type === 'build' && e.key === 'Enter') submitBuilt();
       if (ex.type === 'build' && e.key === 'Backspace') setBuilt((b) => b.slice(0, -1));
@@ -286,6 +304,10 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
           </>
         )}
 
+        {ex.type === 'speak' && !noSpeak && (
+          <SpeakExercise course={course} item={item} onResult={onSpoken} onSkipAll={() => { setNoSpeak(true); next(); }} />
+        )}
+
         {ex.type === 'match' && <Match course={course} ex={ex} sound={sound} autoplay={autoplay} onDone={(misses) => {
           ex.items.forEach((id) => record(id, !misses.has(id)));
           setStatus('right');
@@ -293,6 +315,17 @@ export default function Player({ course, exercises, title, sound, autoplay = tru
           if (sound) beep('right');
         }} />}
       </div>
+
+      {ex.type === 'speak' && (
+        <div className={`feedback ${spoken === 'great' ? 'right' : 'neutral'}`}>
+          <div className="feedback-body">
+            {spoken === 'great' ? <strong>Kuhle! That counts.</strong>
+              : spoken ? <span className="muted small">Try again as often as you like, or move on.</span>
+                : <span className="muted small">Listen, then record yourself.</span>}
+          </div>
+          <button className={`btn ${spoken ? 'primary' : ''}`} onClick={next}>{spoken ? 'Continue' : 'Skip'} <kbd>Enter</kbd></button>
+        </div>
+      )}
 
       {status !== 'answer' && (
         <div className={`feedback ${status}`}>

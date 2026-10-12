@@ -16,3 +16,8 @@ opt-level = "s"
 lto = true
 codegen-units = 1
 strip = true
+
+# Lets the app's own pages use the microphone (pronunciation practice) without a WebView2 prompt.
+[target.'cfg(windows)'.dependencies]
+webview2-com = "0.39"
+windows = "0.62"

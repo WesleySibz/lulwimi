@@ -3,7 +3,7 @@ import Icon from './Icon.jsx';
 import Player, { Lightning, Speak, SrcBadge, Swatch } from './Player.jsx';
 import {
   ACHIEVEMENTS, COURSES, DEFAULT_STATE, QUEST_XP, SRC_LABEL, addXp, bumpDaily, claimQuests, dailyCounters, dailyCulture,
-  dailyProverb, dailyWord, dayNumber, dueItems, dueOn, lessonExercises, levelInfo, loadState, newAchievements,
+  canSpeak, dailyProverb, dailyWord, dayNumber, speakingExercises, dueItems, dueOn, lessonExercises, levelInfo, loadState, newAchievements,
   refreshStreak, reviewExercises, saveState, setOnTop, setWindowMode, srsUpdate, stats, tauri, today, todaysQuests,
   weakestItems,
 } from './lib.js';
@@ -50,6 +50,15 @@ export default function App() {
     setSession({ kind: 'review', exercises: reviewExercises(course, ids), title: due.length ? 'Review' : 'Practice' });
   }
 
+  function startSpeaking() {
+    // Words you've met first, then any word with native audio from lessons you can open.
+    const met = learned.filter((id) => canSpeak(course.items[id]));
+    const open = course.lessonList.filter(isUnlocked).flatMap((l) => l.itemIds).filter((id) => canSpeak(course.items[id]));
+    const pool = [...new Set([...met.sort(() => Math.random() - 0.5), ...open])].slice(0, 6);
+    if (!pool.length) return;
+    setSession({ kind: 'speaking', exercises: speakingExercises(course, pool), title: 'Pronunciation practice' });
+  }
+
   function startLightning() {
     if (learned.length < MIN_LIGHTNING_WORDS) return;
     setSession({ kind: 'lightning', title: 'Lightning round' });
@@ -75,7 +84,7 @@ export default function App() {
         n.progress[cid][session.lesson.id] = { done: (prev?.done || 0) + 1, best: Math.max(prev?.best || 0, r.accuracy) };
         xp = 10 + (r.perfect ? 5 : 0) + comboBonus;
       } else {
-        xp = Math.max(5, Object.values(r.results).filter(Boolean).length) + comboBonus;
+        xp = Math.max(session.kind === 'speaking' ? 3 : 5, Object.values(r.results).filter(Boolean).length) + comboBonus;
       }
       if (r.perfect) n.perfects += 1;
       n.bestCombo = Math.max(s.bestCombo || 0, r.bestCombo);
@@ -157,7 +166,7 @@ export default function App() {
         {tab === 'learn' && (
           <Learn {...{ s, course, due, learned, todayXp, nextLesson, progress, isUnlocked, startLesson, startReview, startLightning, setTab, readProverb }} />
         )}
-        {tab === 'review' && <Review {...{ s, course, due, learned, startReview, startLightning }} />}
+        {tab === 'review' && <Review {...{ s, course, due, learned, startReview, startLightning, startSpeaking }} />}
         {tab === 'wisdom' && <Wisdom course={course} />}
         {tab === 'guide' && <Guide course={course} />}
         {tab === 'me' && <Me {...{ s, setS, update }} />}
@@ -376,7 +385,7 @@ function Learn({ s, course, due, learned, todayXp, nextLesson, progress, isUnloc
 
 // ---------------- Review ----------------
 
-function Review({ s, course, due, learned, startReview, startLightning }) {
+function Review({ s, course, due, learned, startReview, startLightning, startSpeaking }) {
   const cards = s.srs[course.id];
   const boxes = [0, 0, 0, 0, 0, 0, 0];
   learned.forEach((id) => { boxes[cards[id].box] += 1; });
@@ -398,6 +407,11 @@ function Review({ s, course, due, learned, startReview, startLightning }) {
       <button className="btn wide" disabled={learned.length < MIN_LIGHTNING_WORDS} onClick={startLightning}>
         <Icon name="bolt" size={15} /> Lightning round · best {s.lightningBest || 0}
       </button>
+      {Object.values(course.items).some(canSpeak) && (
+        <button className="btn wide" onClick={startSpeaking}>
+          <Icon name="volume" size={15} /> Pronunciation practice
+        </button>
+      )}
       <div className="forecast small muted">
         <span>Due now: <strong>{due.length}</strong></span>
         <span>Tomorrow: <strong>{tomorrow}</strong></span>
@@ -636,9 +650,10 @@ function Result({ r, s, course, onClose }) {
   const great = lightning ? r.newBest : r.perfect;
   const headline = lightning
     ? (r.newBest ? 'New best!' : 'Time!')
-    : r.kind === 'lesson' ? (r.perfect ? 'Flawless lesson' : 'Lesson complete') : 'Review done';
+    : r.kind === 'lesson' ? (r.perfect ? 'Flawless lesson' : 'Lesson complete') : r.kind === 'speaking' ? 'Practice done' : 'Review done';
   const sub = lightning
     ? `${r.right} of ${r.total} right`
+    : r.kind === 'speaking' ? `${Object.keys(r.results).length} great ${Object.keys(r.results).length === 1 ? 'match' : 'matches'}. Saying words out loud is what makes them yours.`
     : r.perfect ? 'Not a single mistake.' : r.accuracy >= 0.8 ? 'Strong work. The tricky ones will come back in review.' : 'Mistakes are how memory is built. These words will come back soon.';
 
   return (

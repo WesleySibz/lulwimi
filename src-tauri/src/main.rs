@@ -26,6 +26,32 @@ fn toggle(app: &AppHandle) {
     }
 }
 
+// Pronunciation practice records your voice. The window only ever shows Lulwimi's own bundled pages,
+// so microphone requests from it are allowed instead of showing a WebView2 prompt that could open
+// while the window is hidden in the tray.
+#[cfg(windows)]
+fn allow_microphone(w: &tauri::WebviewWindow) {
+    use webview2_com::Microsoft::Web::WebView2::Win32::{
+        COREWEBVIEW2_PERMISSION_KIND, COREWEBVIEW2_PERMISSION_KIND_MICROPHONE, COREWEBVIEW2_PERMISSION_STATE_ALLOW,
+    };
+    use webview2_com::PermissionRequestedEventHandler;
+    let _ = w.with_webview(|wv| unsafe {
+        let Ok(core) = wv.controller().CoreWebView2() else { return };
+        let handler = PermissionRequestedEventHandler::create(Box::new(|_, args| {
+            if let Some(args) = args {
+                let mut kind = COREWEBVIEW2_PERMISSION_KIND::default();
+                args.PermissionKind(&mut kind)?;
+                if kind == COREWEBVIEW2_PERMISSION_KIND_MICROPHONE {
+                    args.SetState(COREWEBVIEW2_PERMISSION_STATE_ALLOW)?;
+                }
+            }
+            Ok(())
+        }));
+        let mut token = Default::default();
+        let _ = core.add_PermissionRequested(&handler, &mut token);
+    });
+}
+
 fn main() {
     let hotkey = Shortcut::new(Some(Modifiers::ALT | Modifiers::SHIFT), Code::KeyL);
 
@@ -67,6 +93,8 @@ fn main() {
 
             // Sit in the bottom-right corner, above the taskbar, like a widget.
             if let Some(w) = app.get_webview_window("main") {
+                #[cfg(windows)]
+                allow_microphone(&w);
                 if let (Ok(Some(m)), Ok(size)) = (w.current_monitor(), w.outer_size()) {
                     let area = m.work_area();
                     let margin = (16.0 * m.scale_factor()) as i32;

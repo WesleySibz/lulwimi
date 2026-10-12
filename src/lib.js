@@ -245,7 +245,19 @@ export function lessonExercises(course, lesson, srs = {}) {
     return mcq(course, it, 'e2t');
   });
   ex.push(...later);
+  // Finish by saying two of the words with native audio out loud.
+  ex.push(...shuffle(items.filter(canSpeak)).slice(0, 2).map(speak));
   return ex;
+}
+
+// Speaking: say the word and compare with the native clip (see speech.js).
+// Borrowed isiZulu clips are skipped: you'd be copying the wrong language.
+export const canSpeak = (it) => it.audio.length > 0 && !it.audio[0].borrowed;
+export const speak = (it) => ({ type: 'speak', item: it.id });
+
+// A short session that is only speaking.
+export function speakingExercises(course, ids) {
+  return ids.map((id) => speak(course.items[id]));
 }
 
 // Rough pronunciation guide: Nguni syllables are open (they end in a vowel) and the stress
@@ -283,12 +295,14 @@ export function reviewExercises(course, ids) {
     return mcq(course, it, r % 2 ? 'e2t' : 't2e');
   });
   if (items.length >= 5) ex.splice(Math.floor(ex.length / 2), 0, match(sample(items, 5)));
+  const sayable = items.filter(canSpeak);
+  if (sayable.length) ex.push(speak(sample(sayable, 1)[0]));
   return ex;
 }
 
 // Retry for a mistake: a different format, same word.
 export function retryExercise(course, ex) {
-  if (ex.type === 'match') return null;
+  if (ex.type === 'match' || ex.type === 'speak') return null;
   const it = course.items[ex.item];
   if (ex.type === 'mcq' && ex.dir === 't2e') return mcq(course, it, 'e2t');
   return mcq(course, it, 't2e');
