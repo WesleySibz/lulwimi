@@ -7,7 +7,6 @@ export default {
   id: 'zu',
   name: 'isiZulu',
   native: 'isiZulu',
-  flag: '🇿🇦',
   accent: '#1f8a4c',
   accent2: '#f2b705',
   cousinOf: 'ss',
@@ -31,7 +30,7 @@ export default {
   ],
   units: [
     {
-      id: 'zu-u1', icon: '🌱', title: 'First words',
+      id: 'zu-u1', title: 'First words',
       desc: 'Yes, no, hello and thank you, plus the three clicks.',
       tip: 'Zulu has three clicks: c, q and x. They are ordinary consonants, so don\'t pause before them. Stress usually falls on the second-to-last syllable: sa-wu-BO-na.',
       lessons: [
@@ -59,7 +58,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u2', icon: '👋', title: 'Greetings',
+      id: 'zu-u2', title: 'Greetings',
       desc: 'Greet people, ask their name, say goodbye.',
       tip: 'Greet before anything else, and use titles for respect: "Sawubona mama", "Sawubona baba". With friends you\'ll also hear "Sho!" and "Unjani?". Notice how close siSwati is: the greeting is the same word.',
       lessons: [
@@ -105,7 +104,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u3', icon: '💬', title: 'How are you?',
+      id: 'zu-u3', title: 'How are you?',
       desc: 'Talk about how you feel and your health.',
       tip: '"Ngi-" means "I". To make a verb negative, use a-…-i: ngiyaphila (I am well) → angiphili (I am not well). Ngiyaxolisa is a heartfelt apology; uxolo is "excuse me / sorry".',
       lessons: [
@@ -132,7 +131,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u4', icon: '👪', title: 'Family',
+      id: 'zu-u4', title: 'Family',
       desc: 'Family members, plus "I have" and "I don\'t have".',
       tip: 'Zulu nouns usually carry a prefix vowel: u-baba, u-mama, i-ngane. siSwati often drops it (babe, make). "I have" is ngi-na-/ngi-ne-/ngi-no- + noun, merging with the noun\'s first vowel: na + umama → nginomama.',
       lessons: [
@@ -171,7 +170,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u5', icon: '🧭', title: 'Useful expressions',
+      id: 'zu-u5', title: 'Useful expressions',
       desc: 'Phrases you\'ll use every day.',
       tip: '"Ngicela…" (please / may I have) goes in front of whatever you want: Ngicela amanzi (water, please), Ngicela uphinde (please repeat).',
       lessons: [
@@ -207,7 +206,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u6', icon: '🍲', title: 'Food & drink',
+      id: 'zu-u6', title: 'Food & drink',
       desc: 'Order food, say you\'re hungry, praise the cooking.',
       tip: 'Zulu nouns keep their full prefix (isi-nkwa, ama-nzi, u-bisi), while siSwati shortens many (si-nkhwa, ema-nti, lu-bisi). Compare amanzi ↔ emanti: Zulu z becomes siSwati t.',
       lessons: [
@@ -249,7 +248,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u7', icon: '🚌', title: 'Getting around',
+      id: 'zu-u7', title: 'Getting around',
       desc: 'Taxis, shops and directions.',
       tip: 'Locative "at / to / in": e- + noun + -ini. Isitolo → esitolo, iposi → eposini, idolobha → edolobheni. Place names take e-/kwa- too: eGoli (in Johannesburg), eThekwini (in Durban).',
       lessons: [
@@ -287,7 +286,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u8', icon: '⏰', title: 'Time & days',
+      id: 'zu-u8', title: 'Time & days',
       desc: 'Today, tomorrow, parts of the day, days of the week.',
       tip: 'The days from Tuesday to Friday are numbered: uLwesi-bili (2nd), uLwesi-thathu (3rd), uLwesi-ne (4th), uLwesi-hlanu (5th). iSonto means both Sunday and church.',
       lessons: [
@@ -325,7 +324,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u9', icon: '🔢', title: 'Numbers',
+      id: 'zu-u9', title: 'Numbers',
       desc: 'Count from one to ten.',
       tip: 'Eight and nine mean "leave two fingers" (isishiyagalombili) and "leave one finger" (isishiyagalolunye). Day to day, many people also count in English.',
       lessons: [
@@ -350,7 +349,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u10', icon: '🧱', title: 'Building sentences',
+      id: 'zu-u10', title: 'Building sentences',
       desc: 'Verbs and the "I / you / we" prefixes: your first real sentences.',
       tip: 'Subject prefixes: ngi- (I), u- (you), u-/u- (he/she), si- (we), ni- (you all), ba- (they). Use -ya- when the verb ends the sentence: Ngiyafunda (I am learning), but Ngifunda isiZulu. Negative: a-…-i → angifuni (I don\'t want).',
       lessons: [
@@ -388,7 +387,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u11', icon: '🐄', title: 'Animals & nature',
+      id: 'zu-u11', title: 'Animals & nature',
       desc: 'Cattle, wildlife, the sky and the land.',
       tip: 'Cattle (izinkomo) are central to Zulu culture, used for lobola, ceremonies and wealth. Plural "izin-" in Zulu becomes "tin-" in siSwati: izinkomo ↔ tinkhomo.',
       lessons: [
@@ -425,7 +424,7 @@ export default {
       ],
     },
     {
-      id: 'zu-u12', icon: '🤝', title: 'Respect & culture',
+      id: 'zu-u12', title: 'Respect & culture',
       desc: 'Ukuhlonipha: greeting and addressing people with respect.',
       tip: 'Ukuhlonipha (respect) shapes everyday behaviour: greet first, use titles, receive things with both hands or the right hand, and avoid direct eye contact with elders when they\'re correcting you.',
       lessons: [

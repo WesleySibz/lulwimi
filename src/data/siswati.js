@@ -11,7 +11,6 @@ export default {
   id: 'ss',
   name: 'siSwati',
   native: 'siSwati',
-  flag: '🇸🇿',
   accent: '#3e5eb9',
   accent2: '#ffd900',
   cousinOf: 'zu',
@@ -40,7 +39,7 @@ export default {
   ],
   units: [
     {
-      id: 'ss-u1', icon: '🌱', title: 'First words',
+      id: 'ss-u1', title: 'First words',
       desc: 'Yes, no, hello and thank you, plus your first sounds.',
       tip: 'In siSwati the stress usually falls on the second-to-last syllable: sa-wu-BO-na, ngi-ya-BO-nga. Words are spelled the way they sound, so once you know the letters you can read anything.',
       lessons: [
@@ -68,7 +67,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u2', icon: '👋', title: 'Greetings',
+      id: 'ss-u2', title: 'Greetings',
       desc: 'Greet people, ask their name, say goodbye.',
       tip: 'Greeting comes before everything else. Starting a conversation (even asking for directions) without greeting first is seen as rude. Add a title for respect: "Sawubona make", "Sawubona babe".',
       lessons: [
@@ -116,7 +115,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u3', icon: '💬', title: 'How are you?',
+      id: 'ss-u3', title: 'How are you?',
       desc: 'Talk about how you feel and your health.',
       tip: 'Many feelings use the "ngi-" prefix (I): ngi-jabulile (I am happy), ngi-dziniwe (I am tired). To say "I am not...", start with "a-": ngi-ya-phila (I am well) → a-ngi-phil-i (I am not well).',
       lessons: [
@@ -144,7 +143,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u4', icon: '👪', title: 'Family',
+      id: 'ss-u4', title: 'Family',
       desc: 'Family members, plus "I have" and "I don\'t have".',
       tip: '"I have" is ngi-na + a person (Nginababe, I have a father) or ngi-ne + a thing or group (Nginemndeni, I have a family). "I don\'t have" is Ngite + noun (Ngite bhuti). Elders who aren\'t your parents are still called make, babe, gogo and mkhulu.',
       lessons: [
@@ -191,7 +190,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u5', icon: '🧭', title: 'Useful expressions',
+      id: 'ss-u5', title: 'Useful expressions',
       desc: 'Phrases you\'ll use every day: sorry, repeat that please, no problem.',
       tip: '"Ngicela…" means "Please give me / may I…" and goes in front of what you\'re asking for: Ngicela uphindze (please repeat), Ngicela emanti (water, please). It\'s one of the most useful words you can learn.',
       lessons: [
@@ -228,7 +227,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u6', icon: '🍲', title: 'Food & drink',
+      id: 'ss-u6', title: 'Food & drink',
       desc: 'Order food, say you\'re hungry, praise the cooking.',
       tip: 'Nouns come in classes, each with its own prefix: li-tiya (tea), si-nkhwa (bread), lu-bisi (milk), ema-nti (water). The prefix changes in the plural: si- → ti- (sitselo → titselo, fruits). Etiquette: sit down to eat. Eating while standing is seen as disrespectful.',
       lessons: [
@@ -277,7 +276,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u7', icon: '🚌', title: 'Getting around',
+      id: 'ss-u7', title: 'Getting around',
       desc: 'Taxis, buses, shops and directions.',
       tip: 'To say "at / to / in a place", add e- at the start and -ini at the end: sitolo (shop) → e-sitol-ini (at the shop), liposi → e-pos-ini (at the post office), siteshi → e-sitesh-ini.',
       lessons: [
@@ -313,7 +312,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u8', icon: '⏰', title: 'Time & days',
+      id: 'ss-u8', title: 'Time & days',
       desc: 'Today, tomorrow, parts of the day, days of the week.',
       tip: 'The days of the week are mostly numbered from Monday: Lesi-bili (2nd, Tuesday), Lesi-tsatfu (3rd), Lesi-ne (4th), Lesi-hlanu (5th). Sunday is liSontfo, which is related to the word for "week".',
       lessons: [
@@ -351,7 +350,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u9', icon: '🔢', title: 'Numbers',
+      id: 'ss-u9', title: 'Numbers',
       desc: 'Count from one to ten.',
       tip: 'Six to nine are built from other words: sificaminyamabili (8) and sificalunye (9) literally mean "it is short by two / by one" finger before ten.',
       lessons: [
@@ -376,7 +375,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u10', icon: '🧱', title: 'Building sentences',
+      id: 'ss-u10', title: 'Building sentences',
       desc: 'Verbs and the "I / you / we" prefixes: your first real sentences.',
       tip: 'Verbs take a prefix for who is doing the action: ngi- (I), u- (you), u-/a- (he/she), si- (we), ni- (you all), ba- (they). Add -ya- when nothing comes after the verb: Ngiya-fundza (I am learning) but Ngifundza siSwati (I am learning siSwati). Make it negative with a-…-i: ngifuna → a-ngi-fun-i (I don\'t want).',
       lessons: [
@@ -414,7 +413,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u11', icon: '🐄', title: 'Animals & nature',
+      id: 'ss-u11', title: 'Animals & nature',
       desc: 'Cattle, wildlife, the sky and the land.',
       tip: 'Cattle (tinkhomo) are at the heart of Swazi culture and wealth. That\'s why so many proverbs mention them. Many animal names start with in- (singular) and become tin- in the plural: inkhukhu → tinkhukhu (chickens).',
       lessons: [
@@ -451,7 +450,7 @@ export default {
       ],
     },
     {
-      id: 'ss-u12', icon: '🤝', title: 'Respect & culture',
+      id: 'ss-u12', title: 'Respect & culture',
       desc: 'Greet with titles, address elders, show hospitality.',
       tip: 'Give and receive things with your right hand. Hospitality matters a lot: people visit without appointments, and a good host always shares. Elders\' word is respected and rarely questioned in public.',
       lessons: [

@@ -138,7 +138,7 @@ function distractors(course, item, field, n) {
   return picked.map((x) => x[field]);
 }
 
-function mcq(course, item, dir) {
+export function mcq(course, item, dir) {
   const field = dir === 't2e' ? 'en' : 't';
   const correct = item[field];
   const opts = shuffle([correct, ...distractors(course, item, field, 3)]);
@@ -165,24 +165,58 @@ function match(items) {
 
 const isPhrase = (it) => it.t.trim().split(/\s+/).length >= 2;
 
-export function lessonExercises(course, lesson) {
+// Lesson flow, built on a few learning-science ideas:
+// - Meet a word, then recognise it straight away (errorless start).
+// - Recall earlier words again a few screens later, in the harder direction (spacing inside the lesson).
+// - Finish with production (typing, building) because recalling is what makes memories stick.
+// - Words you already know well skip the introduction so the lesson stays challenging.
+export function lessonExercises(course, lesson, srs = {}) {
   const items = [...new Set(lesson.itemIds)].map((id) => course.items[id]);
+  const known = (it) => (srs[it.id]?.box || 0) >= 2;
+  const fresh = items.filter((it) => !known(it));
   const ex = [];
-  // Phase 1: meet each word, then recognise it straight away.
-  for (const it of items) {
+  const lagged = new Set();
+  fresh.forEach((it, i) => {
     ex.push({ type: 'intro', item: it.id });
     ex.push(mcq(course, it, 't2e'));
-  }
-  // Phase 2: pairs.
+    if (i >= 2 && i % 2 === 0) {
+      const back = fresh[i - 2];
+      lagged.add(back.id);
+      ex.push(mcq(course, back, 'e2t'));
+    }
+  });
   if (items.length >= 4) ex.push(match(sample(items, Math.min(5, items.length))));
-  // Phase 3: recall in the other direction, harder formats.
   const later = shuffle(items).map((it, i) => {
     if (isPhrase(it)) return build(course, it);
-    if (i % 3 === 0 && it.t.length <= 14) return typed(it);
+    if ((lagged.has(it.id) || known(it) || i % 3 === 0) && it.t.length <= 14) return typed(it);
     return mcq(course, it, 'e2t');
   });
   ex.push(...later);
   return ex;
+}
+
+// Rough pronunciation guide: Nguni syllables are open (they end in a vowel) and the stress
+// usually falls on the second-to-last one. "Ngiyabonga" -> "ngi·ya·BO·nga".
+export function stressGuide(text) {
+  return text
+    .replace(/\.\.\.|…|[!?.,;:"()]/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => {
+      const lower = w.toLowerCase();
+      const parts = lower.match(/[^aeiou]*[aeiou]/g);
+      if (!parts || parts.length < 2) return lower;
+      parts[parts.length - 1] += lower.slice(parts.join('').length);
+      parts[parts.length - 2] = parts[parts.length - 2].toUpperCase();
+      return parts.join('·');
+    })
+    .join('  ');
+}
+
+// Lightning round: quick-fire recognition over words you have already met.
+export function lightningExercise(course, ids) {
+  const it = course.items[ids[Math.floor(Math.random() * ids.length)]];
+  return mcq(course, it, Math.random() < 0.5 ? 't2e' : 'e2t');
 }
 
 export function reviewExercises(course, ids) {
@@ -230,6 +264,10 @@ export function dueItems(course, srs, now = dayNumber()) {
     .map(([id]) => id);
 }
 
+export function dueOn(course, srs, day) {
+  return Object.entries(srs).filter(([id, c]) => course.items[id] && c.due === day).length;
+}
+
 export function weakestItems(course, srs, n) {
   return Object.entries(srs)
     .filter(([id]) => course.items[id])
@@ -248,18 +286,64 @@ export function levelInfo(xp) {
 }
 
 export const ACHIEVEMENTS = [
-  { id: 'first', icon: '🌱', name: 'First steps', desc: 'Finish your first lesson', test: (s) => s.lessonsDone >= 1 },
-  { id: 'streak3', icon: '🔥', name: 'Kindling', desc: '3-day streak', test: (s) => s.bestStreak >= 3 },
-  { id: 'streak7', icon: '🔥', name: 'Fire keeper', desc: '7-day streak', test: (s) => s.bestStreak >= 7 },
-  { id: 'streak30', icon: '🌋', name: 'Eternal flame', desc: '30-day streak', test: (s) => s.bestStreak >= 30 },
-  { id: 'xp100', icon: '⭐', name: 'Hundred', desc: 'Earn 100 XP', test: (s) => s.xp >= 100 },
-  { id: 'xp1000', icon: '🌟', name: 'Thousand', desc: 'Earn 1000 XP', test: (s) => s.xp >= 1000 },
-  { id: 'perfect', icon: '💎', name: 'Flawless', desc: 'Finish a lesson with no mistakes', test: (s) => s.perfects >= 1 },
-  { id: 'words50', icon: '📚', name: 'Wordsmith', desc: 'Learn 50 words', test: (s) => s.words >= 50 },
-  { id: 'unit', icon: '🏅', name: 'Unit master', desc: 'Complete a whole unit', test: (s) => s.unitsDone >= 1 },
-  { id: 'both', icon: '🤝', name: 'Nguni cousins', desc: 'Finish a lesson in both siSwati and isiZulu', test: (s) => s.bothLangs },
-  { id: 'wisdom', icon: '🦉', name: 'Elder\'s ear', desc: 'Read 7 daily proverbs', test: (s) => s.proverbsRead >= 7 },
+  { id: 'first', icon: 'sprout', name: 'First steps', desc: 'Finish your first lesson', test: (s) => s.lessonsDone >= 1 },
+  { id: 'streak3', icon: 'flame', name: 'Kindling', desc: '3-day streak', test: (s) => s.bestStreak >= 3 },
+  { id: 'streak7', icon: 'flame', name: 'Fire keeper', desc: '7-day streak', test: (s) => s.bestStreak >= 7 },
+  { id: 'streak30', icon: 'flame', name: 'Eternal flame', desc: '30-day streak', test: (s) => s.bestStreak >= 30 },
+  { id: 'xp100', icon: 'bolt', name: 'Hundred', desc: 'Earn 100 XP', test: (s) => s.xp >= 100 },
+  { id: 'xp1000', icon: 'bolt', name: 'Thousand', desc: 'Earn 1000 XP', test: (s) => s.xp >= 1000 },
+  { id: 'perfect', icon: 'gem', name: 'Flawless', desc: 'Finish a lesson with no mistakes', test: (s) => s.perfects >= 1 },
+  { id: 'combo10', icon: 'star', name: 'On a roll', desc: 'Get 10 answers right in a row', test: (s) => s.bestCombo >= 10 },
+  { id: 'words50', icon: 'book', name: 'Wordsmith', desc: 'Learn 50 words', test: (s) => s.words >= 50 },
+  { id: 'unit', icon: 'medal', name: 'Unit master', desc: 'Complete a whole unit', test: (s) => s.unitsDone >= 1 },
+  { id: 'lightning20', icon: 'clock', name: 'Quick tongue', desc: 'Score 20 in a lightning round', test: (s) => s.lightningBest >= 20 },
+  { id: 'both', icon: 'link', name: 'Nguni cousins', desc: 'Finish a lesson in both siSwati and isiZulu', test: (s) => s.bothLangs },
+  { id: 'wisdom', icon: 'ear', name: 'Elder\'s ear', desc: 'Read 7 daily proverbs', test: (s) => s.proverbsRead >= 7 },
 ];
+
+// ---------- daily quests ----------
+// Three small, varied goals a day. Variety keeps practice from feeling like a chore.
+
+export const QUESTS = [
+  { id: 'lesson', text: 'Finish a lesson', key: 'lessons', target: 1 },
+  { id: 'review', text: 'Review 10 words', key: 'reviewed', target: 10 },
+  { id: 'combo', text: 'Get 5 right in a row', key: 'combo', target: 5 },
+  { id: 'perfect', text: 'Finish a session with no mistakes', key: 'perfect', target: 1 },
+  { id: 'lightning', text: 'Score 10 in a lightning round', key: 'lightning', target: 10 },
+  { id: 'proverb', text: 'Read today\'s proverb', key: 'proverb', target: 1 },
+];
+export const QUEST_XP = 5;
+
+export function todaysQuests() {
+  // Always include the lesson quest so the main path keeps moving, plus two that rotate daily.
+  const rest = QUESTS.slice(1);
+  const n = dayNumber();
+  const a = n % rest.length;
+  const b = (a + 1 + (n % (rest.length - 1))) % rest.length; // never equals a
+  return [QUESTS[0], rest[a], rest[b]];
+}
+
+export function dailyCounters(s) {
+  return s.daily?.date === today() ? s.daily : { date: today(), claimed: {} };
+}
+
+// Patch values are added, except "combo" and "lightning", which keep the best.
+export function bumpDaily(s, patch) {
+  const d = { ...dailyCounters(s) };
+  for (const [k, v] of Object.entries(patch)) {
+    d[k] = k === 'combo' || k === 'lightning' ? Math.max(d[k] || 0, v) : (d[k] || 0) + v;
+  }
+  return { ...s, daily: d };
+}
+
+// Pays out finished quests once. Returns the new state and the quests just completed.
+export function claimQuests(s) {
+  const d = dailyCounters(s);
+  const done = todaysQuests().filter((q) => !d.claimed[q.id] && (d[q.key] || 0) >= q.target);
+  if (!done.length) return { s, done };
+  const n = { ...s, daily: { ...d, claimed: { ...d.claimed, ...Object.fromEntries(done.map((q) => [q.id, true])) } } };
+  return { s: addXp(n, done.length * QUEST_XP), done };
+}
 
 // ---------- storage ----------
 
@@ -282,6 +366,9 @@ export const DEFAULT_STATE = {
   perfects: 0,
   proverbsSeen: {},
   achievements: {},
+  bestCombo: 0,
+  lightningBest: 0,
+  daily: null,
 };
 
 export function loadState() {
@@ -329,6 +416,7 @@ export function stats(s) {
   }
   return {
     xp: s.xp, bestStreak: s.bestStreak, lessonsDone, words, unitsDone, perfects: s.perfects,
+    bestCombo: s.bestCombo || 0, lightningBest: s.lightningBest || 0,
     bothLangs: Object.keys(s.progress.ss).length > 0 && Object.keys(s.progress.zu).length > 0,
     proverbsRead: Object.keys(s.proverbsSeen).length,
   };
@@ -361,7 +449,7 @@ let ctx;
 export function beep(kind) {
   try {
     ctx ??= new (window.AudioContext || window.webkitAudioContext)();
-    const notes = { right: [660, 880], wrong: [220, 180], done: [523, 659, 784, 1046] }[kind];
+    const notes = { right: [660, 880], wrong: [220, 180], done: [523, 659, 784, 1046], combo: [784, 988, 1175] }[kind];
     notes.forEach((f, i) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -376,6 +464,11 @@ export function beep(kind) {
       o.stop(t + 0.2);
     });
   } catch { /* audio not available */ }
+}
+
+// Short vibration on phones that support it.
+export function buzz(ms = 30) {
+  try { navigator.vibrate?.(ms); } catch { /* not supported */ }
 }
 
 // ---------- desktop shell (Tauri) ----------
