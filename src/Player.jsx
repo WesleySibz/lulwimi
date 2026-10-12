@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
-import { SRC_LABEL, beep, buzz, checkTyped, lightningExercise, norm, retryExercise, shuffle, stressGuide } from './lib.js';
+import {
+  SRC_LABEL, VOICE_LABEL, beep, buzz, checkTyped, lightningExercise, norm, playItem, preloadAudio, retryExercise, shuffle, stressGuide,
+} from './lib.js';
 
 export function SrcBadge({ src }) {
   return <span className={`badge src-${src}`} title={src === 'ai' ? 'Not yet checked by a native speaker' : 'From the Peace Corps siSwati materials'}>{SRC_LABEL[src]}</span>;
@@ -13,7 +15,23 @@ export function Swatch({ c }) {
 
 const cousinName = (course) => (course.cousinOf === 'zu' ? 'isiZulu' : 'siSwati');
 
-export default function Player({ course, exercises, title, sound, onFinish, onQuit }) {
+// Speaker + slow buttons. `big` is the listening-exercise version.
+export function Speak({ item, big = false }) {
+  const [voice, setVoice] = useState(null);
+  if (!item?.audio?.length) return null;
+  const play = (slow) => setVoice(playItem(item, { slow }));
+  return (
+    <span className={`speak ${big ? 'big' : ''}`}>
+      <button className="speak-btn" onClick={(e) => { e.stopPropagation(); play(false); }} title="Play (R)" aria-label="Play pronunciation">
+        <Icon name="volume" size={big ? 34 : 18} />
+      </button>
+      <button className="speak-slow" onClick={(e) => { e.stopPropagation(); play(true); }} title="Play slowly" aria-label="Play slowly">Slow</button>
+      {big && voice && <span className="voice-label muted small">{VOICE_LABEL[voice.v]}{voice.borrowed ? ' · isiZulu voice' : ''}</span>}
+    </span>
+  );
+}
+
+export default function Player({ course, exercises, title, sound, autoplay = true, onFinish, onQuit }) {
   const [queue, setQueue] = useState(exercises);
   const [idx, setIdx] = useState(0);
   const [status, setStatus] = useState('answer'); // answer | right | wrong
@@ -25,6 +43,7 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
   const [combo, setCombo] = useState(0);
   const [pulse, setPulse] = useState(false);
   const [confirmQuit, setConfirmQuit] = useState(false);
+  const [noListen, setNoListen] = useState(false); // "Can't listen now" for the rest of this session
   const bestCombo = useRef(0);
   const results = useRef({}); // itemId -> first-try correct?
   const retries = useRef({}); // itemId -> retries queued, capped so a hard word can't make the lesson endless
@@ -33,12 +52,24 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
 
   const ex = queue[idx];
   const item = ex.item ? course.items[ex.item] : null;
+  const listening = Boolean(ex.listen && !noListen && item?.audio.length);
+
+  useEffect(() => {
+    preloadAudio([...new Set(exercises.flatMap((e) => (e.item ? [e.item] : e.items || [])))].map((id) => course.items[id]));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setStatus(ex.type === 'intro' ? 'right' : 'answer');
     setPicked(null); setTypedVal(''); setTypo(null); setBuilt([]); setHints(0);
     if (ex.type === 'type') setTimeout(() => inputRef.current?.focus(), 30);
-  }, [idx]); // eslint-disable-line react-hooks/exhaustive-deps -- appending retries must not reset the screen
+    // Hear the word whenever seeing it doesn't give the answer away.
+    const hearNow = ex.type === 'intro' || (ex.type === 'mcq' && ex.dir === 't2e');
+    if (item && (listening || (autoplay && hearNow))) {
+      const t = setTimeout(() => playItem(item), 250);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  }, [idx, noListen]); // eslint-disable-line react-hooks/exhaustive-deps -- appending retries must not reset the screen
 
   function record(id, ok) {
     if (!(id in results.current)) results.current[id] = ok;
@@ -63,6 +94,8 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
     bumpCombo(ok && remember);
     if (sound) beep(ok ? 'right' : 'wrong');
     if (!ok) buzz(40);
+    // After answering, hear the word you were producing, so sound and spelling get linked.
+    if (autoplay && item?.audio.length && !(ex.type === 'mcq' && ex.dir === 't2e')) setTimeout(() => playItem(item), 450);
     if (!ok && (retries.current[ex.item] || 0) < 2) {
       retries.current[ex.item] = (retries.current[ex.item] || 0) + 1;
       const again = retryExercise(course, ex);
@@ -135,6 +168,7 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
         return;
       }
       if (e.key === 'Escape') { quit(); return; }
+      if ((e.key === 'r' || e.key === 'R') && e.target.tagName !== 'INPUT' && item) { playItem(item); return; }
       if (status !== 'answer') {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); next(); }
         return;
@@ -165,8 +199,20 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
 
         {ex.type === 'mcq' && (
           <>
-            <p className="prompt-label">{ex.dir === 't2e' ? 'What does this mean?' : `How do you say this in ${course.name}?`}</p>
-            <div className={`prompt ${ex.dir === 't2e' ? 'target' : ''}`}>{ex.dir === 't2e' ? item.t : item.en}</div>
+            {listening ? (
+              <>
+                <p className="prompt-label">What do you hear?</p>
+                <div className="listen-box"><Speak item={item} big /></div>
+                <button className="link-btn" onClick={() => setNoListen(true)}><Icon name="mute" size={14} /> Can't listen now</button>
+              </>
+            ) : (
+              <>
+                <p className="prompt-label">{ex.dir === 't2e' ? 'What does this mean?' : `How do you say this in ${course.name}?`}</p>
+                <div className={`prompt ${ex.dir === 't2e' ? 'target' : ''}`}>
+                  {ex.dir === 't2e' ? item.t : item.en} {ex.dir === 't2e' && <Speak item={item} />}
+                </div>
+              </>
+            )}
             <div className="options">
               {ex.options.map((o, i) => {
                 const cls = status === 'answer' ? '' : norm(o) === norm(ex.answer) ? 'good' : o === picked ? 'bad' : 'dim';
@@ -182,8 +228,18 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
 
         {ex.type === 'type' && (
           <>
-            <p className="prompt-label">Type this in {course.name}</p>
-            <div className="prompt">{item.en}</div>
+            {listening ? (
+              <>
+                <p className="prompt-label">Type what you hear</p>
+                <div className="listen-box"><Speak item={item} big /></div>
+                <button className="link-btn" onClick={() => setNoListen(true)}><Icon name="mute" size={14} /> Can't listen now</button>
+              </>
+            ) : (
+              <>
+                <p className="prompt-label">Type this in {course.name}</p>
+                <div className="prompt">{item.en}</div>
+              </>
+            )}
             <input
               ref={inputRef}
               className={`type-input ${status}`}
@@ -230,7 +286,7 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
           </>
         )}
 
-        {ex.type === 'match' && <Match course={course} ex={ex} sound={sound} onDone={(misses) => {
+        {ex.type === 'match' && <Match course={course} ex={ex} sound={sound} autoplay={autoplay} onDone={(misses) => {
           ex.items.forEach((id) => record(id, !misses.has(id)));
           setStatus('right');
           bumpCombo(misses.size === 0);
@@ -249,14 +305,14 @@ export default function Player({ course, exercises, title, sound, onFinish, onQu
               <>
                 <strong>{typo ? 'Correct, but check the spelling:' : hints ? 'Correct, with a hint' : pickPraise(combo)}</strong>
                 {typo && <div className="target">{typo}</div>}
-                {!typo && ex.dir !== 't2e' && <div className="small"><span className="target">{item.t}</span> = {item.en}</div>}
+                {!typo && (ex.dir !== 't2e' || listening) && <div className="small"><span className="target">{item.t}</span> = {item.en} <Speak item={item} /></div>}
                 {!typo && ex.dir === 't2e' && item.cousin && <div className="small muted">{cousinName(course)}: {item.cousin}</div>}
               </>
             ) : (
               <>
                 <strong>The answer is</strong>
-                <div className="target">{ex.dir === 't2e' ? item.en : item.t}</div>
-                {ex.dir !== 't2e' && <div className="small">{item.en}</div>}
+                <div className="target">{ex.dir === 't2e' && !listening ? item.en : item.t} <Speak item={item} /></div>
+                {(ex.dir !== 't2e' || listening) && <div className="small">{item.en}</div>}
                 {item.note && <div className="small muted">{item.note}</div>}
                 <div className="small muted">You'll see this one again shortly.</div>
               </>
@@ -290,6 +346,7 @@ function Intro({ item, course }) {
     <div className="intro">
       <p className="prompt-label">New {item.t.includes(' ') ? 'phrase' : 'word'}</p>
       <div className="intro-word target">{item.t}</div>
+      <Speak item={item} />
       <div className="say" title="Stress usually falls on the second-to-last syllable">Say it: {stressGuide(item.t)}</div>
       <div className="intro-en">{item.en}</div>
       {item.lit && <div className="muted">Literally: “{item.lit}”</div>}
@@ -303,7 +360,7 @@ function Intro({ item, course }) {
   );
 }
 
-function Match({ course, ex, sound, onDone }) {
+function Match({ course, ex, sound, autoplay, onDone }) {
   const left = useMemo(() => shuffle(ex.items), [ex]);
   const right = useMemo(() => shuffle(ex.items), [ex]);
   const [sel, setSel] = useState({ l: null, r: null });
@@ -339,7 +396,7 @@ function Match({ course, ex, sound, onDone }) {
     <>
       <p className="prompt-label">Tap the matching pairs</p>
       <div className="match">
-        <div>{left.map((id) => <button key={id} className={cls('l', id) + ' target'} disabled={done.has(id)} onClick={() => setSel((s) => ({ ...s, l: id }))}>{course.items[id].t}</button>)}</div>
+        <div>{left.map((id) => <button key={id} className={cls('l', id) + ' target'} disabled={done.has(id)} onClick={() => { if (autoplay) playItem(course.items[id]); setSel((s) => ({ ...s, l: id })); }}>{course.items[id].t}</button>)}</div>
         <div>{right.map((id) => <button key={id} className={cls('r', id)} disabled={done.has(id)} onClick={() => setSel((s) => ({ ...s, r: id }))}>{course.items[id].en}</button>)}</div>
       </div>
     </>

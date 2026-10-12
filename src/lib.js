@@ -1,5 +1,6 @@
 import ss from './data/siswati.js';
 import zu from './data/isizulu.js';
+import AUDIO from './data/audio.json' with { type: 'json' };
 
 // ---------- content ----------
 
@@ -49,6 +50,51 @@ for (const c of Object.values(COURSES)) {
     if (cousin && norm(cousin) !== norm(it.t)) it.cousin = cousin;
     else if (cousin) it.same = true;
   }
+}
+
+// ---------- audio ----------
+// Clips live in public/audio/<course>/ and are listed in src/data/audio.json (built by scripts/).
+// voice: 'pc' = Peace Corps native speaker, 'thando' / 'themba' = Azure isiZulu neural voices.
+
+export const audioKey = (text) => norm(text).replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+for (const c of Object.values(COURSES)) {
+  for (const it of Object.values(c.items)) {
+    it.audio = AUDIO[c.id]?.[audioKey(it.t)] || [];
+  }
+}
+// A siSwati word spelled exactly like its isiZulu cousin can borrow the isiZulu voice until a native clip exists.
+for (const it of Object.values(COURSES.ss.items)) {
+  if (!it.audio.length && it.same) {
+    it.audio = (AUDIO.zu?.[audioKey(it.t)] || []).map((a) => ({ ...a, borrowed: true }));
+  }
+}
+
+export const VOICE_LABEL = { pc: 'Peace Corps speaker', thando: 'Thando (AI voice)', themba: 'Themba (AI voice)' };
+
+let player;
+let lastClip = {};
+// Plays one of the item's clips. Alternating voices exposes you to more than one speaker,
+// which helps you recognise words in real conversation.
+export function playItem(item, { slow = false } = {}) {
+  if (!item?.audio?.length) return null;
+  const clips = item.audio;
+  const i = clips.length > 1 ? ((lastClip[item.id] ?? -1) + 1) % clips.length : 0;
+  lastClip[item.id] = i;
+  try {
+    player ??= new Audio();
+    player.pause();
+    player.src = `./audio/${clips[i].f}`;
+    player.playbackRate = slow ? 0.7 : 1;
+    player.preservesPitch = true;
+    player.play().catch(() => {});
+  } catch { /* audio not available */ }
+  return clips[i];
+}
+
+// Warm the cache so a lesson's audio plays instantly (and works offline afterwards).
+export function preloadAudio(items) {
+  for (const it of items) for (const a of it.audio || []) fetch(`./audio/${a.f}`).catch(() => {});
 }
 
 export const SRC_LABEL = {
@@ -159,6 +205,12 @@ function typed(item) {
   return { type: 'type', item: item.id };
 }
 
+// Listening: hear the word with no text and pick its meaning. With `listen` set, the player hides
+// the written prompt; "Can't listen now" turns it back into the normal written question.
+function listen(course, item) {
+  return { ...mcq(course, item, 't2e'), listen: true };
+}
+
 function match(items) {
   return { type: 'match', items: items.map((i) => i.id) };
 }
@@ -187,6 +239,7 @@ export function lessonExercises(course, lesson, srs = {}) {
   });
   if (items.length >= 4) ex.push(match(sample(items, Math.min(5, items.length))));
   const later = shuffle(items).map((it, i) => {
+    if (it.audio.length && i % 3 === 1) return listen(course, it);
     if (isPhrase(it)) return build(course, it);
     if ((lagged.has(it.id) || known(it) || i % 3 === 0) && it.t.length <= 14) return typed(it);
     return mcq(course, it, 'e2t');
@@ -223,6 +276,8 @@ export function reviewExercises(course, ids) {
   const items = ids.map((id) => course.items[id]);
   const ex = items.map((it, i) => {
     const r = i % 4;
+    if (it.audio.length && r === 3) return listen(course, it);
+    if (it.audio.length && r === 0 && !isPhrase(it) && it.t.length <= 14) return { ...typed(it), listen: true };
     if (isPhrase(it) && r < 2) return build(course, it);
     if (r === 0 && it.t.length <= 14) return typed(it);
     return mcq(course, it, r % 2 ? 'e2t' : 't2e');
@@ -353,6 +408,7 @@ export const DEFAULT_STATE = {
   course: 'ss',
   goal: 20,
   sound: true,
+  autoplay: true,
   onTop: false,
   unlockAll: false,
   xp: 0,

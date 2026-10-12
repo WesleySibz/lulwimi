@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "check": "node scripts/check-content.mjs",
     "tauri": "tauri",
-    "desktop": "tauri build"
+    "desktop": "tauri build",
+    "audio:zu": "node scripts/gen-zulu-audio.mjs && node scripts/build-audio-manifest.mjs",
+    "audio:manifest": "node scripts/build-audio-manifest.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

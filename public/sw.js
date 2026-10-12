@@ -1,6 +1,6 @@
 // Serve from cache for offline use, refreshing the cache from the network in the background.
 // Bump CACHE when releasing so phones drop the old version.
-const CACHE = 'lulwimi-v3';
+const CACHE = 'lulwimi-v4';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(
   caches.keys()

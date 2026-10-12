@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from './Icon.jsx';
-import Player, { Lightning, SrcBadge, Swatch } from './Player.jsx';
+import Player, { Lightning, Speak, SrcBadge, Swatch } from './Player.jsx';
 import {
   ACHIEVEMENTS, COURSES, DEFAULT_STATE, QUEST_XP, SRC_LABEL, addXp, bumpDaily, claimQuests, dailyCounters, dailyCulture,
   dailyProverb, dailyWord, dayNumber, dueItems, dueOn, lessonExercises, levelInfo, loadState, newAchievements,
@@ -127,7 +127,7 @@ export default function App() {
   }
 
   if (session) {
-    return <Player course={course} exercises={session.exercises} title={session.title} sound={s.sound} onFinish={finish} onQuit={() => setSession(null)} />;
+    return <Player course={course} exercises={session.exercises} title={session.title} sound={s.sound} autoplay={s.autoplay} onFinish={finish} onQuit={() => setSession(null)} />;
   }
 
   if (result) return <Result r={result} s={s} course={course} onClose={() => setResult(null)} />;
@@ -294,6 +294,7 @@ function Learn({ s, course, due, learned, todayXp, nextLesson, progress, isUnloc
           <div className="eyebrow">Word of the day</div>
           <div className="wotd-row">
             <strong className="target big">{word.t}</strong>
+            <Speak item={word} />
             <span>{word.en}</span>
           </div>
         </div>
@@ -491,7 +492,7 @@ function Guide({ course }) {
       <div className="dict">
         {items.map((i) => (
           <div key={i.id} className="dict-row">
-            <span className="target">{i.t}</span>
+            <span className="target">{i.t} <Speak item={i} /></span>
             <span className="small">{i.en}{i.cousin && <span className="muted"> · {course.cousinOf}: {i.cousin}</span>}</span>
             <SrcBadge src={i.src} />
           </div>
@@ -502,6 +503,8 @@ function Guide({ course }) {
       <h3>Where this content comes from</h3>
       <ul className="small">
         {Object.entries(counts).map(([k, n]) => <li key={k}><SrcBadge src={k} /> {n} entries</li>)}
+        <li><Icon name="volume" size={13} /> {Object.values(course.items).filter((i) => i.audio.length).length} entries have audio
+          {course.id === 'ss' ? ' (Peace Corps native speakers; a few borrow the isiZulu voice where the word is identical)' : ' (Microsoft Azure neural voices Thando and Themba)'}</li>
       </ul>
       <p className="small muted">
         {course.id === 'ss'
@@ -587,6 +590,7 @@ function Me({ s, setS, update }) {
         </select>
       </label>
       <label className="setting">Sound effects <input type="checkbox" checked={s.sound} onChange={(e) => update({ sound: e.target.checked })} /></label>
+      <label className="setting">Play pronunciation automatically <input type="checkbox" checked={s.autoplay} onChange={(e) => update({ autoplay: e.target.checked })} /></label>
       {isDesktop && <label className="setting">Keep window on top <input type="checkbox" checked={s.onTop} onChange={(e) => update({ onTop: e.target.checked })} /></label>}
       <label className="setting">Unlock all lessons <input type="checkbox" checked={s.unlockAll} onChange={(e) => update({ unlockAll: e.target.checked })} /></label>
       <div className="row">
@@ -701,7 +705,7 @@ function Compact({ s, setS, course, due, todayXp, onExpand }) {
         <button className="icon-btn" onClick={onExpand} title="Open full app" aria-label="Open full app"><Icon name="expand" size={16} /></button>
       </div>
       <button className="flash" onClick={() => setFlip(!flip)}>
-        <div className="target big">{item.t}</div>
+        <div className="target big">{item.t} <Speak item={item} /></div>
         {flip ? <div>{item.en}</div> : <div className="muted small">{id ? 'Say the meaning, then tap' : 'Word of the day · tap'}</div>}
       </button>
       {flip && id && (

@@ -26,6 +26,8 @@ const PATHS = {
   clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
   ear: 'M6 9a6 6 0 0 1 12 0c0 4-4 5-4 9a3 3 0 0 1-6 0M9 9a3 3 0 0 1 6 0',
   layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5',
+  volume: 'M11 5L6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14',
+  mute: 'M11 5L6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6',
 };
 
 export default function Icon({ name, size = 18, fill = false, className = '' }) {
